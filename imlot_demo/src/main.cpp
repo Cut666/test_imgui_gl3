@@ -6,10 +6,12 @@
 // - Getting Started      https://dearimgui.com/getting-started
 // - Documentation        https://dearimgui.com/docs (same as your local docs/ folder).
 // - Introduction, links and more at the top of imgui.cpp
-
+#include <iostream>
+#include "implot.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "random"
 #include <stdio.h>
 #define GL_SILENCE_DEPRECATION
 #if defined(IMGUI_IMPL_OPENGL_ES2)
@@ -29,43 +31,54 @@
 #include "../libs/emscripten/emscripten_mainloop_stub.h"
 #endif
 
-static void glfw_error_callback(int error, const char* description)
+static void glfw_error_callback(int error, const char *description)
 {
     fprintf(stderr, "GLFW Error %d: %s\n", error, description);
 }
+// void GenerateRandomData(float *x_data, float *y_data, int count)
+// {
+//     std::random_device rd;
+//     std::mt19937 gen(rd());
+//     std::normal_distribution<float> distribution(1.0f, 1.0f);
 
+//     for (int i = 0; count; ++i)
+//     {
+//         x_data[i] = static_cast<float>(i);
+//         y_data[i] = distribution(gen);
+//     }
+// }
 // Main code
-int main(int, char**)
+int main(int, char **)
 {
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
         return 1;
 
-    // Decide GL+GLSL versions
+        // Decide GL+GLSL versions
 #if defined(IMGUI_IMPL_OPENGL_ES2)
     // GL ES 2.0 + GLSL 100
-    const char* glsl_version = "#version 100";
+    const char *glsl_version = "#version 100";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
 #elif defined(__APPLE__)
     // GL 3.2 + GLSL 150
-    const char* glsl_version = "#version 150";
+    const char *glsl_version = "#version 150";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
 #else
     // GL 3.0 + GLSL 130
-    const char* glsl_version = "#version 130";
+    const char *glsl_version = "#version 130";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
+    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
 
     // Create window with graphics context
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
     if (window == nullptr)
         return 1;
     glfwMakeContextCurrent(window);
@@ -74,38 +87,24 @@ int main(int, char**)
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    ImPlot::CreateContext(); 
+    ImGuiIO &io = ImGui::GetIO();
+    (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
-    //ImGui::StyleColorsLight();
+    // ImGui::StyleColorsLight();
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    // Load Fonts
-    // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
-    // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
-    // - If the file cannot be loaded, the function will return a nullptr. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-    // - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
-    // - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use Freetype for higher quality font rendering.
-    // - Read 'docs/FONTS.md' for more instructions and details.
-    // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-    // - Our Emscripten build process allows embedding fonts to be accessible at runtime from the "fonts/" folder. See Makefile.emscripten for details.
-    //io.Fonts->AddFontDefault();
-    //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-    //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
-    //IM_ASSERT(font != nullptr);
     io.Fonts->AddFontDefault();
-    ImFont* font1 = io.Fonts->AddFontFromFileTTF("/usr/share/fonts/truetype/fonts-gujr-extra/aakar-medium.ttf", 30.0f, nullptr, io.Fonts->GetGlyphRangesVietnamese());
-    ImFont* font2 = io.Fonts->AddFontFromFileTTF("/usr/share/fonts/truetype/fonts-gujr-extra/aakar-medium.ttf", 25.0f, nullptr, io.Fonts->GetGlyphRangesVietnamese());
-    ImFont* font3 = io.Fonts->AddFontFromFileTTF("/usr/share/fonts/truetype/fonts-gujr-extra/aakar-medium.ttf", 20.0f, nullptr, io.Fonts->GetGlyphRangesVietnamese());
+    ImFont *font1 = io.Fonts->AddFontFromFileTTF("/usr/share/fonts/truetype/fonts-gujr-extra/aakar-medium.ttf", 30.0f, nullptr, io.Fonts->GetGlyphRangesVietnamese());
+    ImFont *font2 = io.Fonts->AddFontFromFileTTF("/usr/share/fonts/truetype/fonts-gujr-extra/aakar-medium.ttf", 25.0f, nullptr, io.Fonts->GetGlyphRangesVietnamese());
+    ImFont *font3 = io.Fonts->AddFontFromFileTTF("/usr/share/fonts/truetype/fonts-gujr-extra/aakar-medium.ttf", 20.0f, nullptr, io.Fonts->GetGlyphRangesVietnamese());
     IM_ASSERT(font1 != nullptr);
     IM_ASSERT(font2 != nullptr);
     IM_ASSERT(font3 != nullptr);
@@ -125,11 +124,6 @@ int main(int, char**)
     while (!glfwWindowShouldClose(window))
 #endif
     {
-        // Poll and handle events (inputs, window resize, etc.)
-        // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-        // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
-        // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
-        // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         glfwPollEvents();
 
         // Start the Dear ImGui frame
@@ -138,26 +132,45 @@ int main(int, char**)
         ImGui::NewFrame();
 
         // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-       /* if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);*/
+        /* if (show_demo_window)
+             ImGui::ShowDemoWindow(&show_demo_window);*/
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
         //{
         //    static float f = 0.0f;
         //    static int counter = 0;
 
-            ImGui::Begin("User Interface");                          // Create a window called "Hello, world!" and append into it.
-            ImGui::GetStyle().Colors[ImGuiCol_WindowBg] = ImVec4(193.0f / 255.0f, 228.0f / 255.0f, 205.0f / 255.0f, 1.0f);
-           
-            
+        ImGui::Begin("Graph"); // Create a window called "Hello, world!" and append into it.
+        ImGui::GetStyle().Colors[ImGuiCol_WindowBg] = ImVec4(193.0f / 255.0f, 228.0f / 255.0f, 205.0f / 255.0f, 1.0f);
 
+        // float x_data[1000];
+        // float y_data[1000];
+        // GenerateRandomData(x_data, y_data, 1000);
 
+        // // Hiển thị biểu đồ đường
+        // if (ImPlot::BeginPlot("My Line Plot"))
+        // {
+        //     ImPlot::PlotLine("My Line Plot", x_data, y_data, 1000);
+        //     ImPlot::EndPlot();
+        // }
+         // Biểu đồ ImPlot
+        if (ImPlot::BeginPlot("Gamma_ray and CAL vs DEPT", "DEPT", "Values", ImVec2(400, 300))) {
+            // Dữ liệu DEPT, Gamma_ray và CAL
+            double depth_data[] = {2587, 2587.5, 2588, 2588.5, 2589, 2589.5};
+            double gamma_ray_data[] = {20.26, 98.702, 99.173, 99.675, 100.215, 100.796};
+            double cal_data[] = {6.843, 6.941, 7.06, 7.198, 7.35, 7.512};
+            int data_count = sizeof(depth_data) / sizeof(depth_data[0]);
 
+            // Vẽ đồ thị cho Gamma_ray
+            ImPlot::PlotLine("Gamma_ray", depth_data, gamma_ray_data, data_count);
 
+            // Vẽ đồ thị cho CAL
+            ImPlot::PlotLine("CAL", depth_data, cal_data, data_count);
 
+            ImPlot::EndPlot();
+        }
 
-            
-            ImGui::End();
+        ImGui::End();
 
         // Rendering
         ImGui::Render();
