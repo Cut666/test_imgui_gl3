@@ -1,0 +1,3 @@
+/home/thai-ubuntu/roadmaptest/build/CMakeFiles/myprogram.dir
+/home/thai-ubuntu/roadmaptest/build/CMakeFiles/edit_cache.dir
+/home/thai-ubuntu/roadmaptest/build/CMakeFiles/rebuild_cache.dir
